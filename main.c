@@ -4,6 +4,6 @@
 
 int main()
 {
-    fprintf(stdout, "Hello, world!");
+    fprintf(stdout, "Hello, world!\n");
     return EXIT_SUCCESS;
 }
