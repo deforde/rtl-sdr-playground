@@ -31,7 +31,7 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
     const size_t display_height = 46;
     const size_t display_width = 202;
 
-    const float target_min_ampl = -120;
+    const float target_min_ampl = -40;
     const float target_max_ampl = 0;
 
     const float data_min_ampl = get_min_ampl(ampl, len);

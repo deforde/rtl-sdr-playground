@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(rtl-sdr-playground C)
 
-add_executable(rtl-sdr-playground main.c plot.c control.c)
+add_executable(rtl-sdr-playground main.c plot.c control.c fft.c)
 
-target_link_libraries(rtl-sdr-playground rtlsdr pthread m)
+target_link_libraries(rtl-sdr-playground rtlsdr fftw3 pthread m)
