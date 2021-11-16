@@ -49,35 +49,37 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
     static const size_t display_height = 46;
     static const size_t display_width = 202;
 
+    if(display_width > len) {
+        //TODO
+        fprintf(stderr, "Implementation for case in which the source data len (%lu) is less than the display width (%lu) does not yet exist!", len, display_width);
+        return;
+    }
+
+    const double resample_ratio = (double)len / display_width;
+
+    float resampled_data[display_width];
+    for(size_t i = 0; i < display_width; ++i) {
+        const size_t input_start_index = fmin(floor(i * resample_ratio), len - 1);
+        const size_t input_end_index = fmin(ceil((i + 1) * resample_ratio), len);
+        const size_t input_block_len = input_end_index - input_start_index;
+
+        resampled_data[i] = peak_hold(&ampl[input_start_index], input_block_len);
+    }
+
     static float min_ampl = FLT_MAX;
     static float max_ampl = -FLT_MAX;
 
-    const float data_min_ampl = get_min_ampl(ampl, len);
-    const float data_max_ampl = get_max_ampl(ampl, len);
+    const float data_min_ampl = get_min_ampl(resampled_data, display_width);
+    const float data_max_ampl = get_max_ampl(resampled_data, display_width);
 
     min_ampl = fminf(min_ampl, data_min_ampl);
     max_ampl = fmaxf(max_ampl, data_max_ampl);
 
     const float ampl_range = max_ampl - min_ampl;
 
-    uint32_t resampled_data[display_width];
-    if(display_width <= len) {
-        const double resample_ratio = (double)len / display_width;
-        for(size_t i = 0; i < display_width; ++i) {
-            const size_t input_start_index = fmin(floor(i * resample_ratio), len - 1);
-            const size_t input_end_index = fmin(ceil((i + 1) * resample_ratio), len);
-            const size_t input_block_len = input_end_index - input_start_index;
-
-            float resampled_value = peak_hold(&ampl[input_start_index], input_block_len);
-
-            const uint32_t discretised_ampl = fmin(round(((resampled_value - min_ampl) / ampl_range) * display_height), display_height - 1);
-            resampled_data[i] = discretised_ampl;
-        }
-    }
-    else {
-        //TODO
-        fprintf(stderr, "Implementation for case in which the source data len (%lu) is less than the display width (%lu) does not yet exist!", len, display_width);
-        return;
+    uint32_t discretised_data[display_width];
+    for(size_t i = 0; i < display_width; ++i) {
+        discretised_data[i] = fmin(round(((resampled_data[i] - min_ampl) / ampl_range) * display_height), display_height - 1);
     }
 
     const size_t rows = display_height;
@@ -96,7 +98,7 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
     }
     display_grid[rows * columns] = 0;
     for(size_t i = 0; i < display_width; ++i) {
-        const uint32_t ampl = resampled_data[i];
+        const uint32_t ampl = discretised_data[i];
         const size_t row_index = display_height - 1 - ampl;
         display_grid[row_index * columns + i + y_axis_label_len] = '-';
     }
