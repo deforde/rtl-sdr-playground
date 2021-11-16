@@ -11,6 +11,10 @@
 #include "plot.h"
 #include "fft.h"
 
+#define NUM_SAMPLES 16384
+#define IQ_BUF_LEN NUM_SAMPLES * 2 // * 2 for the I and Q components
+#define FFT_LEN NUM_SAMPLES
+
 int main()
 {
     int r = 0;
@@ -18,9 +22,7 @@ int main()
     rtlsdr_dev_t* dev = NULL;
     const uint32_t sample_rate_Hz = 2048000;
     const uint32_t centre_frequency_Hz = 94000000;
-    const size_t num_samples = 16384;
-    size_t buf_len = num_samples * 2; // * 2 for the I and Q components
-    uint8_t buffer[buf_len];
+    uint8_t buffer[IQ_BUF_LEN];
     int n_read = 0;
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
@@ -36,23 +38,23 @@ int main()
     reset_buffer(dev);
 
     fft_desc fft;
-    init_fft(&fft, num_samples);
+    init_fft(&fft, FFT_LEN);
 
     for(;;) {
-        r = rtlsdr_read_sync(dev, buffer, buf_len, &n_read);
+        r = rtlsdr_read_sync(dev, buffer, IQ_BUF_LEN, &n_read);
         if (r < 0) {
             fprintf(stderr, "Sync read failed.\n");
             return EXIT_FAILURE;
         }
         //printf("Sync read succeeded, bytes read: %d.\n", n_read);
 
-        const bool success = execute_fft(&fft, buffer, buf_len);
+        const bool success = execute_fft(&fft, buffer, IQ_BUF_LEN);
         if(!success) {
             return EXIT_FAILURE;
         }
 
-        float amplitude_spectrum[fft.len];
-        for(size_t i = 0; i < fft.len; ++i) {
+        float amplitude_spectrum[FFT_LEN];
+        for(size_t i = 0; i < FFT_LEN; ++i) {
             amplitude_spectrum[i] = 10*log10(sqrt(fft.output[i][0] * fft.output[i][0] + fft.output[i][1] * fft.output[i][1]) + DBL_MIN);
         }
 
