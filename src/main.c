@@ -4,6 +4,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -16,6 +17,8 @@
 #define IQ_BUF_LEN (NUM_SAMPLES * 2) // * 2 for the I and Q components
 #define FFT_LEN NUM_SAMPLES
 
+bool do_exit = false;
+
 typedef struct thread_args {
     rtlsdr_dev_t* dev;
     uint8_t* buffer;
@@ -23,6 +26,12 @@ typedef struct thread_args {
     fft_desc* fft;
     bool* do_exit;
 } thread_args;
+
+void signal_handler(int signal)
+{
+    fprintf(stderr, "Signal caught (%i), exiting.\n", signal);
+    do_exit = true;
+}
 
 void* data_consume_thread(void* args)
 {
@@ -70,7 +79,6 @@ int main()
     const uint32_t sample_rate_Hz = 2048000;
     const uint32_t centre_frequency_Hz = 94000000;
     uint8_t buffer[IQ_BUF_LEN];
-    bool do_exit = false;
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
     if (r < 0) {
@@ -91,6 +99,8 @@ int main()
     pthread_attr_init(&thread_attr);
     pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_JOINABLE);
     pthread_t thread_handle;
+
+    signal(SIGINT, signal_handler);
 
     thread_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
     pthread_create(&thread_handle, &thread_attr, data_consume_thread, (void*)&thread_args);
