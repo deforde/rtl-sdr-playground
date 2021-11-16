@@ -13,7 +13,7 @@ void init_fft(fft_desc* fft, size_t len)
 bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples)
 {
     if(num_samples < 2 * fft->len) {
-        fprintf(stderr, "%s -> Cannot execute fft of length: %ul, on a input IQ data buffer containing only: %ul samples.\n", __func__, fft->len, num_samples);
+        fprintf(stderr, "Cannot execute fft of length: %ul, on a input IQ data buffer containing only: %ul samples.\n", fft->len, num_samples);
         return false;
     }
 
