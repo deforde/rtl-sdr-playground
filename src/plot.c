@@ -26,19 +26,37 @@ float get_max_ampl(float* ampl, size_t len)
     return max_ampl;
 }
 
+float peak_hold(float* ampl, size_t len)
+{
+    float peak = -FLT_MAX;
+    for(size_t i = 0; i < len; ++i) {
+        peak = fmax(peak, ampl[i]);
+    }
+    return peak;
+}
+
+float mean(float* ampl, size_t len)
+{
+    float peak = 0.0f;
+    for(size_t i = 0; i < len; ++i) {
+        peak += ampl[i];
+    }
+    return peak / len;
+}
+
 void plot_amplitude_spectrum(float* ampl, size_t len)
 {
-    const size_t display_height = 46;
-    const size_t display_width = 202;
+    static const size_t display_height = 46;
+    static const size_t display_width = 202;
 
-    const float target_min_ampl = -40;
-    const float target_max_ampl = 0;
+    static float min_ampl = FLT_MAX;
+    static float max_ampl = -FLT_MAX;
 
     const float data_min_ampl = get_min_ampl(ampl, len);
     const float data_max_ampl = get_max_ampl(ampl, len);
 
-    const float min_ampl = fmin(data_min_ampl, target_min_ampl);
-    const float max_ampl = fmax(data_max_ampl, target_max_ampl);
+    min_ampl = fminf(min_ampl, data_min_ampl);
+    max_ampl = fmaxf(max_ampl, data_max_ampl);
 
     const float ampl_range = max_ampl - min_ampl;
 
@@ -48,18 +66,11 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
         for(size_t i = 0; i < display_width; ++i) {
             const size_t input_start_index = fmin(floor(i * resample_ratio), len - 1);
             const size_t input_end_index = fmin(ceil((i + 1) * resample_ratio), len);
+            const size_t input_block_len = input_end_index - input_start_index;
 
-            // float input_block_max = min_ampl;
-            // for(size_t j = input_start_index; j < input_end_index; ++j) {
-            //     input_block_max = fmax(input_block_max, ampl[j]);
-            // }
-            float input_block_mean = 0.0f;
-            for(size_t j = input_start_index; j < input_end_index; ++j) {
-                input_block_mean += ampl[j];
-            }
-            input_block_mean /= (input_end_index - input_start_index);
+            float resampled_value = peak_hold(&ampl[input_start_index], input_block_len);
 
-            const uint32_t discretised_ampl = fmin(roundf(((input_block_mean - min_ampl) / ampl_range) * display_height), display_height - 1);
+            const uint32_t discretised_ampl = fmin(round(((resampled_value - min_ampl) / ampl_range) * display_height), display_height - 1);
             resampled_data[i] = discretised_ampl;
         }
     }
@@ -71,25 +82,23 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
 
     const size_t rows = display_height;
     const size_t y_axis_label_len = 7;
-    const size_t trailer_len = 2; //for \n and \0
-    const size_t columns = y_axis_label_len + display_width + trailer_len;
-    char display_grid[rows][columns];
+    const size_t row_trailer_len = 1; //for \n
+    const size_t columns = y_axis_label_len + display_width + row_trailer_len;
+    char display_grid[rows * columns + 1]; // + 1 for trailing \0
     float discretized_level = max_ampl;
     float discretized_ampl_res = ampl_range / display_height;
     for(size_t i = 0; i < rows; ++i) {
-        int bytes_written = snprintf(display_grid[i], 7, "%+.2f", discretized_level);
+        int bytes_written = snprintf(&display_grid[i * columns], y_axis_label_len, "%+.2f", discretized_level);
         discretized_level -= discretized_ampl_res;
-        memset(&display_grid[i][bytes_written - 1], ' ', y_axis_label_len - bytes_written + 1);
-        memset(&display_grid[i][y_axis_label_len], ' ', columns - trailer_len - y_axis_label_len);
-        display_grid[i][columns - 2] = '\n';
-        display_grid[i][columns - 1] = 0;
+        memset(&display_grid[i * columns + bytes_written - 1], ' ', y_axis_label_len - bytes_written + 1);
+        memset(&display_grid[i * columns + y_axis_label_len], ' ', columns - row_trailer_len - y_axis_label_len);
+        display_grid[i * columns + columns - 1] = '\n';
     }
+    display_grid[rows * columns] = 0;
     for(size_t i = 0; i < display_width; ++i) {
         const uint32_t ampl = resampled_data[i];
         const size_t row_index = display_height - 1 - ampl;
-        display_grid[row_index][i + y_axis_label_len] = '-';
+        display_grid[row_index * columns + i + y_axis_label_len] = '-';
     }
-    for(size_t i = 0; i < rows; ++i) {
-        printf("%s", display_grid[i]);
-    }
+    printf("%s", display_grid);
 }
