@@ -3,9 +3,21 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <fftw3.h>
 
-size_t fft(const uint8_t* const buf, size_t len, fftw_complex** p_fft_data_buf);
+typedef struct fft_desc
+{
+    size_t len;
+    fftw_complex* output;
+    fftw_plan plan;
+} fft_desc;
+
+void init_fft(fft_desc* fft, size_t len);
+
+bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples);
+
+void destroy_fft(fft_desc* fft);
 
 #endif

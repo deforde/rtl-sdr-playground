@@ -1,31 +1,37 @@
 
 #include "fft.h"
 
-size_t fft(const uint8_t* const buf, size_t len, fftw_complex** p_fft_data_buf)
+void init_fft(fft_desc* fft, size_t len)
 {
-    size_t fft_len = len / 2;
+    fft->len = len;
+    fft->output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fft->len);
+    fft->plan = fftw_plan_dft_1d(fft->len, fft->output, fft->output, FFTW_FORWARD, FFTW_ESTIMATE);
+}
 
-    fftw_complex* fft_data_buf;
-    fftw_plan plan;
-
-    fft_data_buf = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fft_len);
-    *p_fft_data_buf = fft_data_buf;
-
-    plan = fftw_plan_dft_1d(fft_len, fft_data_buf, fft_data_buf, FFTW_FORWARD, FFTW_ESTIMATE);
-
-    for(size_t i = 0; i < fft_len; ++i) {
-        fft_data_buf[i][0] = ((double)buf[2*i] - INT8_MAX) / INT8_MAX;
-        fft_data_buf[i][1] = ((double)buf[2*i+1] - INT8_MAX) / INT8_MAX;
+bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples)
+{
+    if(num_samples < 2 * fft->len) {
+        fprintf(stderr, "%s -> Cannot execute fft of length: %ul, on a input IQ data buffer containing only: %ul samples", __func__, fft->len, num_samples);
+        return false;
     }
 
-    fftw_execute(plan);
-
-    for(size_t i = 0; i < fft_len; ++i) {
-        fft_data_buf[i][0] /= fft_len;
-        fft_data_buf[i][1] /= fft_len;
+    for(size_t i = 0; i < fft->len; ++i) {
+        fft->output[i][0] = ((double)iq_buf[2*i] - INT8_MAX) / INT8_MAX;
+        fft->output[i][1] = ((double)iq_buf[2*i+1] - INT8_MAX) / INT8_MAX;
     }
 
-    fftw_destroy_plan(plan);
+    fftw_execute(fft->plan);
 
-    return fft_len;
+    for(size_t i = 0; i < fft->len; ++i) {
+        fft->output[i][0] /= fft->len;
+        fft->output[i][1] /= fft->len;
+    }
+
+    return true;
+}
+
+void destroy_fft(fft_desc* fft)
+{
+    fftw_destroy_plan(fft->plan);
+    fftw_free(fft->output);
 }
