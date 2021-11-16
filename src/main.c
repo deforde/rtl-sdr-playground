@@ -1,17 +1,16 @@
+#include "control.h"
+#include "fft.h"
+#include "plot.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 #include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include <pthread.h>
 
-#include "rtl-sdr.h"
-
-#include "control.h"
-#include "plot.h"
-#include "fft.h"
+#include <rtl-sdr.h>
 
 #define NUM_SAMPLES 16384
 #define IQ_BUF_LEN (NUM_SAMPLES * 2) // * 2 for the I and Q components

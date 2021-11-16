@@ -1,3 +1,4 @@
+#include "plot.h"
 
 #include <float.h>
 #include <math.h>
@@ -5,8 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plot.h"
 
 #define DISPLAY_WIDTH 202
 #define DISPLAY_HEIGHT 46
@@ -18,7 +17,7 @@ float get_min_ampl(float* ampl, size_t len)
 {
     float min_ampl = FLT_MAX;
     for(size_t i = 0; i < len; ++i) {
-        min_ampl = fmin(min_ampl, ampl[i]);
+        min_ampl = fminf(min_ampl, ampl[i]);
     }
     return min_ampl;
 }
@@ -27,7 +26,7 @@ float get_max_ampl(float* ampl, size_t len)
 {
     float max_ampl = -FLT_MAX;
     for(size_t i = 0; i < len; ++i) {
-        max_ampl = fmax(max_ampl, ampl[i]);
+        max_ampl = fmaxf(max_ampl, ampl[i]);
     }
     return max_ampl;
 }
@@ -36,7 +35,7 @@ float peak_hold(float* ampl, size_t len)
 {
     float peak = -FLT_MAX;
     for(size_t i = 0; i < len; ++i) {
-        peak = fmax(peak, ampl[i]);
+        peak = fmaxf(peak, ampl[i]);
     }
     return peak;
 }
@@ -53,7 +52,7 @@ float mean(float* ampl, size_t len)
 void plot_amplitude_spectrum(float* ampl, size_t len)
 {
     if(DISPLAY_WIDTH > len) {
-        //TODO
+        //TODO: Provide implementation for case in which the source data len is less than the display width
         fprintf(stderr, "Implementation for case in which the source data len (%u) is less than the display width (%u) does not yet exist!\n", len, DISPLAY_WIDTH);
         return;
     }
@@ -62,8 +61,8 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
 
     float resampled_data[DISPLAY_WIDTH];
     for(size_t i = 0; i < DISPLAY_WIDTH; ++i) {
-        const size_t input_start_index = fmin(floor(i * resample_ratio), len - 1);
-        const size_t input_end_index = fmin(ceil((i + 1) * resample_ratio), len);
+        const size_t input_start_index = (size_t)fmin(floor(i * resample_ratio), len - 1);
+        const size_t input_end_index = (size_t)fmin(ceil((i + 1) * resample_ratio), len);
         const size_t input_block_len = input_end_index - input_start_index;
 
         resampled_data[i] = peak_hold(&ampl[input_start_index], input_block_len);
@@ -82,7 +81,7 @@ void plot_amplitude_spectrum(float* ampl, size_t len)
 
     uint32_t discretised_data[DISPLAY_WIDTH];
     for(size_t i = 0; i < DISPLAY_WIDTH; ++i) {
-        discretised_data[i] = fmin(round(((resampled_data[i] - min_ampl) / ampl_range) * DISPLAY_HEIGHT), DISPLAY_HEIGHT - 1);
+        discretised_data[i] = (uint32_t)fminf(roundf(((resampled_data[i] - min_ampl) / ampl_range) * DISPLAY_HEIGHT), DISPLAY_HEIGHT - 1);
     }
 
     char display_grid[DISPLAY_HEIGHT * NUM_COLUMNS + 1]; // + 1 for trailing \0

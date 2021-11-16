@@ -1,4 +1,3 @@
-
 #include "fft.h"
 
 void init_fft(fft_desc* fft, size_t len)

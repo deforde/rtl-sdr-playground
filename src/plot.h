@@ -5,4 +5,4 @@
 
 void plot_amplitude_spectrum(float* ampl, size_t len);
 
-#endif
+#endif //PLOT_H

@@ -1,7 +1,6 @@
+#include "control.h"
 
 #include <stdio.h>
-
-#include "control.h"
 
 int set_sample_rate(rtlsdr_dev_t* dev, uint32_t sample_rate_Hz)
 {
