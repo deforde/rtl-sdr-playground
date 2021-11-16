@@ -37,7 +37,7 @@ int main()
     set_gain_mode_auto(dev);
     reset_buffer(dev);
 
-    fft_desc fft;
+    fft_desc fft = { .len = 0, .output = NULL };
     init_fft(&fft, FFT_LEN);
 
     for(;;) {
