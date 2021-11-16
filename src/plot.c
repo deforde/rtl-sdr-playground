@@ -13,7 +13,7 @@
 #define ROW_TRAILER_LEN 1
 #define NUM_COLUMNS (Y_AXIS_LABEL_LEN + DISPLAY_WIDTH + ROW_TRAILER_LEN)
 
-float get_min_ampl(float* ampl, size_t len)
+float get_min_ampl(float const* ampl, size_t len)
 {
     float min_ampl = FLT_MAX;
     for(size_t i = 0; i < len; ++i) {
@@ -22,7 +22,7 @@ float get_min_ampl(float* ampl, size_t len)
     return min_ampl;
 }
 
-float get_max_ampl(float* ampl, size_t len)
+float get_max_ampl(float const* ampl, size_t len)
 {
     float max_ampl = -FLT_MAX;
     for(size_t i = 0; i < len; ++i) {
@@ -31,7 +31,7 @@ float get_max_ampl(float* ampl, size_t len)
     return max_ampl;
 }
 
-float peak_hold(float* ampl, size_t len)
+float peak_hold(float const* ampl, size_t len)
 {
     float peak = -FLT_MAX;
     for(size_t i = 0; i < len; ++i) {
@@ -40,7 +40,7 @@ float peak_hold(float* ampl, size_t len)
     return peak;
 }
 
-float mean(float* ampl, size_t len)
+float mean(float const* ampl, size_t len)
 {
     float peak = 0.0f;
     for(size_t i = 0; i < len; ++i) {
