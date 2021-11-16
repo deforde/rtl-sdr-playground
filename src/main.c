@@ -84,7 +84,7 @@ int main()
     set_gain_mode_auto(dev);
     reset_buffer(dev);
 
-    fft_desc fft = { .len = 0, .output = NULL };
+    fft_desc fft = { .len = 0, .output = NULL, .scratch = NULL };
     init_fft(&fft, FFT_LEN);
 
     pthread_attr_t thread_attr;

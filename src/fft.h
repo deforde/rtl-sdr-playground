@@ -12,6 +12,7 @@ typedef struct fft_desc
     size_t len;
     fftw_complex* output;
     fftw_plan plan;
+    fftw_complex* scratch;
 } fft_desc;
 
 void init_fft(fft_desc* fft, size_t len);

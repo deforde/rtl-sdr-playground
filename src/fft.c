@@ -1,10 +1,13 @@
 #include "fft.h"
 
+#include <string.h>
+
 void init_fft(fft_desc* fft, size_t len)
 {
     fft->len = len;
     fft->output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fft->len);
     fft->plan = fftw_plan_dft_1d(fft->len, fft->output, fft->output, FFTW_FORWARD, FFTW_ESTIMATE);
+    fft->scratch = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fft->len / 2);
 }
 
 bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples)
@@ -25,6 +28,10 @@ bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples)
         fft->output[i][0] /= fft->len;
         fft->output[i][1] /= fft->len;
     }
+
+    memcpy(fft->scratch, fft->output, sizeof(fftw_complex) * fft->len / 2);
+    memcpy(fft->output, &fft->output[fft->len / 2], sizeof(fftw_complex) * fft->len / 2);
+    memcpy(&fft->output[fft->len / 2], fft->scratch, sizeof(fftw_complex) * fft->len / 2);
 
     return true;
 }
