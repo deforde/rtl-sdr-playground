@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <float.h>
 #include <math.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -48,7 +47,7 @@ void* plot_ampl_spectrum(void* args)
 
     free(amplitude_spectrum);
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 void* send_iq_data(void* args)
@@ -79,5 +78,5 @@ void* send_iq_data(void* args)
         nanosleep(&tim, NULL);
     }
 
-    pthread_exit(NULL);
+    return NULL;
 }
