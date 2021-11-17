@@ -28,4 +28,12 @@ typedef struct send_iq_data_args {
 
 void* send_iq_data(void* args);
 
+typedef struct data_read_callback_args {
+    rtlsdr_dev_t* dev;
+    int socket;
+    bool* do_exit;
+} data_read_callback_args;
+
+void data_read_callback(unsigned char* buffer, uint32_t len, void* args);
+
 #endif //PROC_H

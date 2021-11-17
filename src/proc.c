@@ -80,3 +80,24 @@ void* send_iq_data(void* args)
 
     return NULL;
 }
+
+void data_read_callback(unsigned char* buffer, uint32_t len, void* args)
+{
+    data_read_callback_args* p_args = (data_read_callback_args*)args;
+    rtlsdr_dev_t* dev = p_args->dev;
+    int socket = p_args->socket;
+    bool* do_exit = p_args->do_exit;
+
+    if(*do_exit) {
+        rtlsdr_cancel_async(dev);
+        return;
+    }
+
+    int s = send(socket, buffer, len, 0);
+    if(s < 0) {
+        fprintf(stderr, "Send failed: %i: %s.\n", errno, strerror(errno));
+        rtlsdr_cancel_async(dev);
+        *do_exit = true;
+        return;
+    }
+}

@@ -31,7 +31,7 @@ int main()
     rtlsdr_dev_t* dev = NULL;
     const uint32_t sample_rate_Hz = 2048000;
     const uint32_t centre_frequency_Hz = 94000000;
-    uint8_t buffer[IQ_BUF_LEN];
+    // uint8_t buffer[IQ_BUF_LEN];
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
     if (r < 0) {
@@ -49,22 +49,31 @@ int main()
     int socket = accept_connection(port);
     printf("Client connection accepted.\n");
 
-    fft_desc fft = { .len = 0, .output = NULL, .scratch = NULL };
-    init_fft(&fft, FFT_LEN);
+    // fft_desc fft = { .len = 0, .output = NULL, .scratch = NULL };
+    // init_fft(&fft, FFT_LEN);
 
     signal(SIGINT, signal_handler);
 
-    thread_t proc_thread;
-    send_iq_data_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
-    launch_thread(&proc_thread, send_iq_data, (void*)&thread_args);
-    join_thread(&proc_thread);
+    // thread_t proc_thread;
+    // send_iq_data_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
+    // launch_thread(&proc_thread, send_iq_data, (void*)&thread_args);
+    // join_thread(&proc_thread);
 
     // thread_t proc_thread;
     // plot_ampl_spectrum_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
     // launch_thread(&proc_thread, plot_ampl_spectrum, (void*)&thread_args);
     // join_thread(&proc_thread);
 
-    destroy_fft(&fft);
+    data_read_callback_args callback_args = { .dev = dev, .socket = socket, .do_exit = &do_exit };
+    r = rtlsdr_read_async(dev, data_read_callback, (void*)&callback_args, 0, IQ_BUF_LEN);
+    if (r < 0) {
+        fprintf(stderr, "Async data read failed.\n");
+        do_exit = true;
+    }
+
+    // destroy_fft(&fft);
+
+    rtlsdr_close(dev);
 
     printf("Exiting.\n");
 
