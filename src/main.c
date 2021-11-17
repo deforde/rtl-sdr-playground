@@ -1,7 +1,10 @@
 #include "control.h"
 #include "fft.h"
 #include "plot.h"
+#include "proc.h"
 #include "server.h"
+
+#include <rtl-sdr.h>
 
 #include <errno.h>
 #include <float.h>
@@ -14,72 +17,16 @@
 #include <sys/socket.h>
 #include <time.h>
 
-#include <rtl-sdr.h>
-
 #define NUM_SAMPLES 16384
 #define IQ_BUF_LEN (NUM_SAMPLES * 2) // * 2 for the I and Q components
 #define FFT_LEN NUM_SAMPLES
 
 bool do_exit = false;
 
-typedef struct thread_args {
-    rtlsdr_dev_t* dev;
-    uint8_t* buffer;
-    size_t buf_len;
-    fft_desc* fft;
-    int socket;
-    bool* do_exit;
-} thread_args;
-
 void signal_handler(int signal)
 {
     fprintf(stderr, "Signal caught (%i), exiting.\n", signal);
     do_exit = true;
-}
-
-void* data_consume_thread(void* args)
-{
-    thread_args* thread_args = args;
-    rtlsdr_dev_t* dev = thread_args->dev;
-    uint8_t* buffer = thread_args->buffer;
-    size_t buf_len = thread_args->buf_len;
-    //fft_desc* fft = thread_args->fft;
-    int socket = thread_args->socket;
-    bool* do_exit = thread_args->do_exit;
-
-    while(!(*do_exit)) {
-        int n_read = 0;
-        int r = rtlsdr_read_sync(dev, buffer, buf_len, &n_read);
-        if (r < 0) {
-            fprintf(stderr, "Sync read failed.\n");
-            break;
-        }
-        //printf("Sync read succeeded, bytes read: %d.\n", n_read);
-
-        // const bool success = execute_fft(fft, buffer, buf_len);
-        // if(!success) {
-        //     break;
-        // }
-
-        // float amplitude_spectrum[FFT_LEN];
-        // for(size_t i = 0; i < FFT_LEN; ++i) {
-        //     amplitude_spectrum[i] = 10*log10(sqrt(fft->output[i][0] * fft->output[i][0] + fft->output[i][1] * fft->output[i][1]) + DBL_MIN);
-        // }
-
-        // system("clear");
-        // plot_amplitude_spectrum(amplitude_spectrum, fft->len);
-
-        int s = send(socket, buffer, buf_len, 0);
-        if(s < 0) {
-            fprintf(stderr, "Send failed: %i: %s.\n", errno, strerror(errno));
-            break;
-        }
-
-        const struct timespec tim = { .tv_sec = 0, .tv_nsec = 500000000 };
-        nanosleep(&tim, NULL);
-    }
-
-    pthread_exit(NULL);
 }
 
 int main()
@@ -90,7 +37,7 @@ int main()
     const uint32_t sample_rate_Hz = 2048000;
     const uint32_t centre_frequency_Hz = 94000000;
     uint8_t buffer[IQ_BUF_LEN];
-    const uint16_t port = 50007;
+    //const uint16_t port = 50007;
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
     if (r < 0) {
@@ -104,8 +51,8 @@ int main()
     set_gain_mode_auto(dev);
     reset_buffer(dev);
 
-    int socket = accept_connection(port);
-    printf("Client connection accepted.\n");
+    // int socket = accept_connection(port);
+    // printf("Client connection accepted.\n");
 
     fft_desc fft = { .len = 0, .output = NULL, .scratch = NULL };
     init_fft(&fft, FFT_LEN);
@@ -117,8 +64,11 @@ int main()
 
     signal(SIGINT, signal_handler);
 
-    thread_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .socket = socket, .do_exit = &do_exit };
-    pthread_create(&thread_handle, &thread_attr, data_consume_thread, (void*)&thread_args);
+    // send_iq_data_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
+    // pthread_create(&thread_handle, &thread_attr, send_iq_data, (void*)&thread_args);
+
+    plot_ampl_spectrum_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
+    pthread_create(&thread_handle, &thread_attr, plot_ampl_spectrum, (void*)&thread_args);
 
     pthread_attr_destroy(&thread_attr);
 
