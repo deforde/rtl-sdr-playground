@@ -7,15 +7,10 @@
 
 #include <rtl-sdr.h>
 
-#include <errno.h>
-#include <float.h>
-#include <math.h>
 #include <signal.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
-#include <time.h>
 
 #define NUM_SAMPLES 16384
 #define IQ_BUF_LEN (NUM_SAMPLES * 2) // * 2 for the I and Q components
