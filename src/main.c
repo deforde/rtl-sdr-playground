@@ -3,13 +3,13 @@
 #include "plot.h"
 #include "proc.h"
 #include "server.h"
+#include "thread.h"
 
 #include <rtl-sdr.h>
 
 #include <errno.h>
 #include <float.h>
 #include <math.h>
-#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +37,6 @@ int main()
     const uint32_t sample_rate_Hz = 2048000;
     const uint32_t centre_frequency_Hz = 94000000;
     uint8_t buffer[IQ_BUF_LEN];
-    //const uint16_t port = 50007;
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
     if (r < 0) {
@@ -51,29 +50,24 @@ int main()
     set_gain_mode_auto(dev);
     reset_buffer(dev);
 
-    // int socket = accept_connection(port);
-    // printf("Client connection accepted.\n");
+    const uint16_t port = 50007;
+    int socket = accept_connection(port);
+    printf("Client connection accepted.\n");
 
     fft_desc fft = { .len = 0, .output = NULL, .scratch = NULL };
     init_fft(&fft, FFT_LEN);
 
-    pthread_attr_t thread_attr;
-    pthread_attr_init(&thread_attr);
-    pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_JOINABLE);
-    pthread_t thread_handle;
-
     signal(SIGINT, signal_handler);
 
-    // send_iq_data_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
-    // pthread_create(&thread_handle, &thread_attr, send_iq_data, (void*)&thread_args);
+    thread_t proc_thread;
+    send_iq_data_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
+    launch_thread(&proc_thread, send_iq_data, (void*)&thread_args);
+    join_thread(&proc_thread);
 
-    plot_ampl_spectrum_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
-    pthread_create(&thread_handle, &thread_attr, plot_ampl_spectrum, (void*)&thread_args);
-
-    pthread_attr_destroy(&thread_attr);
-
-    void* thread_status;
-    pthread_join(thread_handle, &thread_status);
+    // thread_t proc_thread;
+    // plot_ampl_spectrum_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
+    // launch_thread(&proc_thread, plot_ampl_spectrum, (void*)&thread_args);
+    // join_thread(&proc_thread);
 
     destroy_fft(&fft);
 
