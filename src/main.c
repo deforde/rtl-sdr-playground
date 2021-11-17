@@ -75,7 +75,7 @@ void* data_consume_thread(void* args)
             break;
         }
 
-        const struct timespec tim = { .tv_sec = 0, .tv_nsec = 100000000 };
+        const struct timespec tim = { .tv_sec = 0, .tv_nsec = 500000000 };
         nanosleep(&tim, NULL);
     }
 
