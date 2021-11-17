@@ -37,7 +37,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         now_ns = time.time_ns()
         delta_ns = now_ns - last_plot_time_ns
-        if delta_ns < 1_000_000_000:
+        if delta_ns < 500_000_000:
             continue
 
         last_plot_time_ns = now_ns
