@@ -1,27 +1,54 @@
 import socket
 from math import log10
-from sys import float_info
+from sys import float_info, exc_info
 
 import matplotlib.pyplot as plt
 from numpy import fft, linspace
 
-host = '192.168.7.2' # TODO: Should be set programatically rather than hard-coded
-port = 50007
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    host = '192.168.7.2' # TODO: Should be set programatically rather than hard-coded
+    port = 50007
+
     s.connect((host, port))
 
-    rx_bytes = s.recv(32768)
-    rx_data = list(rx_bytes)
+    num_iq_samples = 32768
+    fft_len = num_iq_samples // 2
+    freq_axis = linspace(-0.5, 0.5, fft_len)
 
-    i_data = rx_data[::2]
-    q_data = rx_data[1::2]
+    ampl_data = [0.0 for i in range(fft_len)]
 
-    iq_data = [complex((x - 127) / 127, (y - 127) / 127) for x,y in zip(i_data, q_data)]
+    plt.style.use('ggplot')
+    plt.ion()
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    spectrum, = ax.plot(freq_axis, ampl_data)
+    plt.ylabel('Amplitude (dBm)')
+    plt.xlabel('Frequency (normalised)')
+    plt.title('RTL-SDR Spectrum')
+    #plt.show()
 
-    fft_data = fft.fftshift(fft.fft(iq_data))
+    min_ampl = min(ampl_data)
+    max_ampl = max(ampl_data)
 
-    freq = linspace(-0.5, 0.5, len(fft_data))
-    ampl_data = [10*log10(abs(v) / len(fft_data) + float_info.epsilon) for v in fft_data]
+    while True:
+        rx_bytes = s.recv(num_iq_samples)
+        rx_data = list(rx_bytes)
 
-    plt.plot(freq, ampl_data)
-    plt.show()
+        i_data = rx_data[::2]
+        q_data = rx_data[1::2]
+
+        iq_data = [complex((x - 127) / 127, (y - 127) / 127) for x,y in zip(i_data, q_data)]
+
+        fft_data = fft.fftshift(fft.fft(iq_data))
+
+        ampl_data = [10 * log10(abs(v) / len(fft_data) + float_info.epsilon) for v in fft_data]
+
+        local_min = min(ampl_data)
+        local_max = max(ampl_data)
+        if local_min < min_ampl or local_max > max_ampl:
+            min_ampl = min(local_min, min_ampl)
+            max_ampl = max(local_max, max_ampl)
+            plt.ylim([min_ampl, max_ampl])
+
+        spectrum.set_ydata(ampl_data)
+        plt.pause(0.1)
