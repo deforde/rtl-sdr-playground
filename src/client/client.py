@@ -22,7 +22,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     spectrum, = ax.plot(freq_axis, ampl_data)
-    plt.ylabel('Amplitude (dBm)')
+    plt.ylabel('Amplitude (dB)')
     plt.xlabel('Frequency (normalised)')
     plt.title('RTL-SDR Spectrum')
     #plt.show()
