@@ -1,6 +1,7 @@
 import socket
 from math import log10
-from sys import float_info, exc_info
+from sys import float_info
+import time
 
 import matplotlib.pyplot as plt
 from numpy import fft, linspace
@@ -25,13 +26,22 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     plt.ylabel('Amplitude (dB)')
     plt.xlabel('Frequency (normalised)')
     plt.title('RTL-SDR Spectrum')
-    #plt.show()
 
     min_ampl = min(ampl_data)
     max_ampl = max(ampl_data)
 
+    last_plot_time_ns = 0
+
     while True:
         rx_bytes = s.recv(num_iq_samples)
+
+        now_ns = time.time_ns()
+        delta_ns = now_ns - last_plot_time_ns
+        if delta_ns < 1_000_000_000:
+            continue
+
+        last_plot_time_ns = now_ns
+
         rx_data = list(rx_bytes)
 
         i_data = rx_data[::2]
