@@ -10,7 +10,9 @@
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #define NUM_SAMPLES 16384
 #define IQ_BUF_LEN (NUM_SAMPLES * 2) // * 2 for the I and Q components
@@ -24,14 +26,38 @@ void signal_handler(int signal)
     do_exit = true;
 }
 
-int main()
+void usage()
 {
+    printf(
+        "rtl-sdr-playground\n\n"
+        "Use:\trtl-sdr-playground -f freq\n"
+        "\t-f centre_frequency\n"
+        "\n"
+        );
+    exit(EXIT_SUCCESS);
+}
+
+int main(int argc, char** argv)
+{
+    int opt = 0;
     int r = 0;
     const int dev_index = 0;
     rtlsdr_dev_t* dev = NULL;
     const uint32_t sample_rate_Hz = 2048000;
-    const uint32_t centre_frequency_Hz = 94000000;
+    uint32_t centre_frequency_Hz = 97000000;
     // uint8_t buffer[IQ_BUF_LEN];
+
+    while ((opt = getopt(argc, argv, "f:h")) != -1) {
+        switch (opt) {
+        case 'f':
+            centre_frequency_Hz = (uint32_t)atol(optarg);
+            break;
+        case 'h':
+        default:
+            usage();
+            break;
+        }
+    }
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
     if (r < 0) {
