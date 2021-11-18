@@ -30,7 +30,7 @@ A playground for rtl-sdr related software.
 ----------------
 ### Todo:
 
-- Improve FM demodulation implementation (add de-emphasis filtering, second-stage audio filtering and down-conversion).
+- Improve FM demodulation implementation (e.g. add de-emphasis filtering).
 - Play demodulated audio directly, instead of writing to file.
 - Add dynamic amplitude spectrum display to assist with locating FM signals.
 - Implement FM demodulation on the server side.
