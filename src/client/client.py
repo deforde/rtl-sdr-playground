@@ -1,10 +1,23 @@
 import socket
-from math import log10
+from math import log10, pi
 from sys import float_info
-import time
+from cmath import phase
 
+from numpy import convolve, int16, array, fft, linspace
 import matplotlib.pyplot as plt
-from numpy import fft, linspace
+
+def plot_amplitude_spectrum(iq_data):
+    fft_data = fft.fftshift(fft.fft(iq_data))
+    ampl_data = [10 * log10(abs(v) / len(fft_data) + float_info.epsilon) for v in fft_data]
+    freq_axis = linspace(-0.5, 0.5, len(fft_data))
+    plt.style.use('ggplot')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(freq_axis, ampl_data)
+    plt.ylabel('Amplitude (dB)')
+    plt.xlabel('Frequency (normalised)')
+    plt.title('RTL-SDR Spectrum')
+    plt.show()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     host = '192.168.7.2' # TODO: Should be set programatically rather than hard-coded
@@ -12,53 +25,36 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     s.connect((host, port))
 
-    num_iq_samples = 32768
-    fft_len = num_iq_samples // 2
-    freq_axis = linspace(-0.5, 0.5, fft_len)
+    num_samples = 16384
+    num_raw_bytes = 2 * num_samples
 
-    ampl_data = [0.0 for i in range(fft_len)]
+    file = open("audio.bin", "wb")
 
-    plt.style.use('ggplot')
-    plt.ion()
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    spectrum, = ax.plot(freq_axis, ampl_data)
-    plt.ylabel('Amplitude (dB)')
-    plt.xlabel('Frequency (normalised)')
-    plt.title('RTL-SDR Spectrum')
+    try:
+        filter = [0.00006448984879187328, 0.0001817947924724327, 0.00039491906668758664, 0.0007108488837184187, 0.0011106422041704178, 0.0015369155899683153, 0.0018937446610476603, 0.002059919467855908, 0.0019160081616781221, 0.0013807926198643624, 0.00044785601903144, -0.0007898043114602071, -0.0021386911465999317, -0.0033339954312544213, -0.004097455151351057, -0.004212352418281239, -0.003595859902794442, -0.0023454828311608106, -0.0007399052310275609, 0.0008145221219448863, 0.001884514542037386, 0.0021342061705929573, 0.0014377766246860474, -0.00005690768599047815, -0.0019411491267344364, -0.003641500137550939, -0.004580382760294286, -0.004358155240060348, -0.002901603651390893, -0.0005259471889638478, 0.002120219758851951, 0.004224539357139316, 0.0050543041253042825, 0.004203526595733725, 0.0017639465163283522, -0.0016453475122521967, -0.005016634761029146, -0.0072356435110508465, -0.00743241939936848, -0.00529478440902953, -0.0012374692418724838, 0.00364542716478797, 0.007855187463278186, 0.009928492432043051, 0.008919671633064357, 0.004773941436046384, -0.001542176092863602, -0.008224841844270232, -0.013110654759927872, -0.014331434510499196, -0.010959218403956316, -0.003435929859611057, 0.006374715587261896, 0.015577173951240919, 0.021011767584514892, 0.020213420567485277, 0.01229679636351035, -0.0015037896725472923, -0.01783834460310451, -0.03185012939189925, -0.038283682651143174, -0.032835760823993976, -0.013404349723147397, 0.019107505244255314, 0.06067930099992444, 0.1048284201857963, 0.14391056714031464, 0.17076848789209503, 0.18033124039703805, 0.17076848789209503, 0.14391056714031464, 0.1048284201857963, 0.06067930099992444, 0.019107505244255314, -0.013404349723147397, -0.032835760823993976, -0.038283682651143174, -0.03185012939189925, -0.01783834460310451, -0.0015037896725472923, 0.01229679636351035, 0.020213420567485277, 0.021011767584514892, 0.015577173951240919, 0.006374715587261896, -0.003435929859611057, -0.010959218403956316, -0.014331434510499196, -0.013110654759927872, -0.008224841844270232, -0.001542176092863602, 0.004773941436046384, 0.008919671633064357, 0.009928492432043051, 0.007855187463278186, 0.00364542716478797, -0.0012374692418724838, -0.00529478440902953, -0.00743241939936848, -0.0072356435110508465, -0.005016634761029146, -0.0016453475122521967, 0.0017639465163283522, 0.004203526595733725, 0.0050543041253042825, 0.004224539357139316, 0.002120219758851951, -0.0005259471889638478, -0.002901603651390893, -0.004358155240060348, -0.004580382760294286, -0.003641500137550939, -0.0019411491267344364, -0.00005690768599047815, 0.0014377766246860474, 0.0021342061705929573, 0.001884514542037386, 0.0008145221219448863, -0.0007399052310275609, -0.0023454828311608106, -0.003595859902794442, -0.004212352418281239, -0.004097455151351057, -0.0033339954312544213, -0.0021386911465999317, -0.0007898043114602071, 0.00044785601903144, 0.0013807926198643624, 0.0019160081616781221, 0.002059919467855908, 0.0018937446610476603, 0.0015369155899683153, 0.0011106422041704178, 0.0007108488837184187, 0.00039491906668758664, 0.0001817947924724327, 0.00006448984879187328]
+        delay_line = [complex(0, 0) for i in range(len(filter))]
 
-    min_ampl = min(ampl_data)
-    max_ampl = max(ampl_data)
+        while True:
+            raw_data = list(s.recv(num_raw_bytes))
 
-    last_plot_time_ns = 0
+            iq_data = [complex((x - 127) / 127, (y - 127) / 127) for x,y in zip(raw_data[::2], raw_data[1::2])]
 
-    while True:
-        rx_bytes = s.recv(num_iq_samples)
+            # plot_amplitude_spectrum(iq_data)
 
-        now_ns = time.time_ns()
-        delta_ns = now_ns - last_plot_time_ns
-        if delta_ns < 500_000_000:
-            continue
+            i_data = [x.real for x in delay_line] + [x.real for x in iq_data]
+            q_data = [x.imag for x in delay_line] + [x.imag for x in iq_data]
 
-        last_plot_time_ns = now_ns
+            filtered_i_data = convolve(i_data, filter, mode='valid')[::8]
+            filtered_q_data = convolve(q_data, filter, mode='valid')[::8]
 
-        rx_data = list(rx_bytes)
+            filtered_iq_data = [complex(x,y) for x,y in zip(filtered_i_data, filtered_q_data)]
 
-        i_data = rx_data[::2]
-        q_data = rx_data[1::2]
+            delay_line = iq_data[::-1][:len(filter):][::-1]
 
-        iq_data = [complex((x - 127) / 127, (y - 127) / 127) for x,y in zip(i_data, q_data)]
+            polar_discriminant = [phase(filtered_iq_data[n] * filtered_iq_data[n-1].conjugate()) / pi for n in range(1,len(filtered_iq_data))]
 
-        fft_data = fft.fftshift(fft.fft(iq_data))
+            polar_discriminant = array([int16(x * 32767) for x in polar_discriminant])
 
-        ampl_data = [10 * log10(abs(v) / len(fft_data) + float_info.epsilon) for v in fft_data]
-
-        local_min = min(ampl_data)
-        local_max = max(ampl_data)
-        if local_min < min_ampl or local_max > max_ampl:
-            min_ampl = min(local_min, min_ampl)
-            max_ampl = max(local_max, max_ampl)
-            plt.ylim([min_ampl, max_ampl])
-
-        spectrum.set_ydata(ampl_data)
-        plt.pause(0.1)
+            file.write(polar_discriminant.tobytes())
+    finally:
+        file.close()
