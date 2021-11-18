@@ -14,7 +14,9 @@ A playground for rtl-sdr related software.
 - Written in `Python`.
 - Source located here: `src/client/client.py`
 - Connects to the server.
-- Continuously reads IQ sample data blocks from the server and dynamically plots the amplitude spectrum thereof.
+- Continuously reads IQ sample data blocks from the server.
+- Implements FM demodulation.
+- Writes raw PCM data to file.
 
 ----------------
 ### Dependencies
@@ -24,3 +26,12 @@ A playground for rtl-sdr related software.
 - [Python v3.8](https://www.python.org/downloads/)
 - [Matplotlib](https://matplotlib.org/stable/index.html)
 - [Numpy](https://numpy.org/)
+
+----------------
+### Todo:
+
+- Improve FM demodulation implementation (add de-emphasis filtering, second-stage audio filtering and down-conversion).
+- Play demodulated audio directly, instead of writing to file.
+- Add dynamic amplitude spectrum display to assist with locating FM signals.
+- Implement FM demodulation on the server side.
+- Implement intelligent fine tuning to fix on carrier signal.
