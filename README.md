@@ -23,7 +23,6 @@ A playground for rtl-sdr related software.
 
 - [rtl-sdr](https://github.com/osmocom/rtl-sdr)
 - [fftw](https://www.fftw.org/)
-- [Python v3.8](https://www.python.org/downloads/)
 - [Matplotlib](https://matplotlib.org/stable/index.html)
 - [Numpy](https://numpy.org/)
 
