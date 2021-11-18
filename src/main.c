@@ -43,14 +43,17 @@ int main(int argc, char** argv)
     int r = 0;
     const int dev_index = 0;
     rtlsdr_dev_t* dev = NULL;
-    const uint32_t sample_rate_Hz = 2048000;
-    uint32_t centre_frequency_Hz = 97000000;
+    uint32_t sample_rate_Hz = 1020000;
+    uint32_t centre_frequency_Hz = 95700000;
     // uint8_t buffer[IQ_BUF_LEN];
 
-    while ((opt = getopt(argc, argv, "f:h")) != -1) {
+    while ((opt = getopt(argc, argv, "f:s:h")) != -1) {
         switch (opt) {
         case 'f':
             centre_frequency_Hz = (uint32_t)atol(optarg);
+            break;
+        case 's':
+            sample_rate_Hz = (uint32_t)atol(optarg);
             break;
         case 'h':
         default:
