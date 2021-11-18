@@ -32,6 +32,5 @@ A playground for rtl-sdr related software.
 
 - Improve FM demodulation implementation (e.g. add de-emphasis filtering).
 - Play demodulated audio directly, instead of writing to file.
-- Add dynamic amplitude spectrum display to assist with locating FM signals.
 - Implement FM demodulation on the server side.
 - Implement intelligent fine tuning to fix on carrier signal.
