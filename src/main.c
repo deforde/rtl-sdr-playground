@@ -78,22 +78,22 @@ int main(int argc, char** argv)
     int socket = accept_connection(port);
     printf("Client connection accepted.\n");
 
-    // fft_desc fft = { .len = 0, .output = NULL, .scratch = NULL };
+    // fft_desc_t fft = { .len = 0, .output = NULL, .scratch = NULL };
     // init_fft(&fft, FFT_LEN);
 
     signal(SIGINT, signal_handler);
 
     // thread_t proc_thread;
-    // send_iq_data_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
+    // send_iq_data_args_t thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .socket = socket, .do_exit = &do_exit };
     // launch_thread(&proc_thread, send_iq_data, (void*)&thread_args);
     // join_thread(&proc_thread);
 
     // thread_t proc_thread;
-    // plot_ampl_spectrum_args thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
+    // plot_ampl_spectrum_args_t thread_args = { .dev = dev, .buffer = buffer, .buf_len = IQ_BUF_LEN, .fft = &fft, .do_exit = &do_exit };
     // launch_thread(&proc_thread, plot_ampl_spectrum, (void*)&thread_args);
     // join_thread(&proc_thread);
 
-    data_read_callback_args callback_args = { .dev = dev, .socket = socket, .do_exit = &do_exit };
+    data_read_callback_args_t callback_args = { .dev = dev, .socket = socket, .do_exit = &do_exit };
     r = rtlsdr_read_async(dev, data_read_callback, (void*)&callback_args, 0, IQ_BUF_LEN);
     if (r < 0) {
         fprintf(stderr, "Async data read failed.\n");

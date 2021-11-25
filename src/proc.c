@@ -11,11 +11,11 @@
 
 void* plot_ampl_spectrum(void* args)
 {
-    plot_ampl_spectrum_args* p = (plot_ampl_spectrum_args*)args;
+    plot_ampl_spectrum_args_t* p = (plot_ampl_spectrum_args_t*)args;
     rtlsdr_dev_t* dev = p->dev;
     uint8_t* buffer = p->buffer;
     size_t buf_len = p->buf_len;
-    fft_desc* fft = p->fft;
+    fft_desc_t* fft = p->fft;
     bool* do_exit = p->do_exit;
 
     float* amplitude_spectrum = (float*)malloc(sizeof(float) * fft->len);
@@ -52,7 +52,7 @@ void* plot_ampl_spectrum(void* args)
 
 void* send_iq_data(void* args)
 {
-    send_iq_data_args* thread_args = (send_iq_data_args*)args;
+    send_iq_data_args_t* thread_args = (send_iq_data_args_t*)args;
     rtlsdr_dev_t* dev = thread_args->dev;
     uint8_t* buffer = thread_args->buffer;
     size_t buf_len = thread_args->buf_len;
@@ -83,7 +83,7 @@ void* send_iq_data(void* args)
 
 void data_read_callback(unsigned char* buffer, uint32_t len, void* args)
 {
-    data_read_callback_args* p_args = (data_read_callback_args*)args;
+    data_read_callback_args_t* p_args = (data_read_callback_args_t*)args;
     rtlsdr_dev_t* dev = p_args->dev;
     int socket = p_args->socket;
     bool* do_exit = p_args->do_exit;

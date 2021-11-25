@@ -7,18 +7,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-typedef struct fft_desc
-{
+typedef struct {
     size_t len;
     fftw_complex* output;
     fftw_plan plan;
     fftw_complex* scratch;
-} fft_desc;
+} fft_desc_t;
 
-void init_fft(fft_desc* fft, size_t len);
+void init_fft(fft_desc_t* fft, size_t len);
 
-bool execute_fft(fft_desc* fft, const uint8_t* iq_buf, size_t num_samples);
+bool execute_fft(fft_desc_t* fft, const uint8_t* iq_buf, size_t num_samples);
 
-void destroy_fft(fft_desc* fft);
+void destroy_fft(fft_desc_t* fft);
 
 #endif //FFT_H

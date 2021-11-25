@@ -5,12 +5,12 @@
 
 typedef void* (*thread_func_t)(void*);
 
-typedef struct thread_args_wrapper_t {
+typedef struct {
     thread_func_t func;
     void* args;
 } thread_args_wrapper_t;
 
-typedef struct thread_t {
+typedef struct {
     pthread_attr_t attr;
     pthread_t handle;
     thread_args_wrapper_t args;

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-void init_fft(fft_desc* fft, size_t len)
+void init_fft(fft_desc_t* fft, size_t len)
 {
     fft->len = len;
     fft->output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fft->len);
@@ -10,7 +10,7 @@ void init_fft(fft_desc* fft, size_t len)
     fft->scratch = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fft->len / 2);
 }
 
-bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples)
+bool execute_fft(fft_desc_t* fft, const uint8_t* const iq_buf, size_t num_samples)
 {
     if(num_samples < 2 * fft->len) {
         fprintf(stderr, "Cannot execute fft of length: %ul, on a input IQ data buffer containing only: %ul samples.\n", fft->len, num_samples);
@@ -36,7 +36,7 @@ bool execute_fft(fft_desc* fft, const uint8_t* const iq_buf, size_t num_samples)
     return true;
 }
 
-void destroy_fft(fft_desc* fft)
+void destroy_fft(fft_desc_t* fft)
 {
     fftw_destroy_plan(fft->plan);
     fftw_free(fft->output);
