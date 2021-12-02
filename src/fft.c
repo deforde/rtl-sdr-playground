@@ -18,8 +18,8 @@ bool execute_fft(fft_desc_t* fft, const uint8_t* const iq_buf, size_t num_sample
     }
 
     for(size_t i = 0; i < fft->len; ++i) {
-        fft->output[i][0] = ((double)iq_buf[2*i] - INT8_MAX) / INT8_MAX;
-        fft->output[i][1] = ((double)iq_buf[2*i+1] - INT8_MAX) / INT8_MAX;
+        fft->output[i][0] = ((double)iq_buf[2 * i] - INT8_MAX) / INT8_MAX;
+        fft->output[i][1] = ((double)iq_buf[2 * i + 1] - INT8_MAX) / INT8_MAX;
     }
 
     fftw_execute(fft->plan);

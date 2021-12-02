@@ -1,12 +1,11 @@
 #ifndef PROC_H
 #define PROC_H
 
-#include "fft.h"
-
 #include <rtl-sdr.h>
-
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "fft.h"
 
 typedef struct {
     rtlsdr_dev_t* dev;

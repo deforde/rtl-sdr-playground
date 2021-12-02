@@ -2,7 +2,6 @@
 #define FFT_H
 
 #include <fftw3.h>
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>

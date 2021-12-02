@@ -1,18 +1,17 @@
-#include "control.h"
-#include "fft.h"
-#include "plot.h"
-#include "proc.h"
-#include "server.h"
-#include "thread.h"
-
 #include <rtl-sdr.h>
-
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include "control.h"
+#include "fft.h"
+#include "plot.h"
+#include "proc.h"
+#include "server.h"
+#include "thread.h"
 
 #define NUM_SAMPLES 16384
 #define IQ_BUF_LEN (NUM_SAMPLES * 2) // * 2 for the I and Q components
@@ -32,8 +31,7 @@ void usage()
         "rtl-sdr-playground\n\n"
         "Use:\trtl-sdr-playground -f freq\n"
         "\t-f centre_frequency\n"
-        "\n"
-        );
+        "\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -47,8 +45,8 @@ int main(int argc, char** argv)
     uint32_t centre_frequency_Hz = 95700000;
     // uint8_t buffer[IQ_BUF_LEN];
 
-    while ((opt = getopt(argc, argv, "f:s:h")) != -1) {
-        switch (opt) {
+    while((opt = getopt(argc, argv, "f:s:h")) != -1) {
+        switch(opt) {
         case 'f':
             centre_frequency_Hz = (uint32_t)atol(optarg);
             break;
@@ -63,7 +61,7 @@ int main(int argc, char** argv)
     }
 
     r = rtlsdr_open(&dev, (uint32_t)dev_index);
-    if (r < 0) {
+    if(r < 0) {
         fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
         return EXIT_FAILURE;
     }
@@ -95,7 +93,7 @@ int main(int argc, char** argv)
 
     data_read_callback_args_t callback_args = { .dev = dev, .socket = socket, .do_exit = &do_exit };
     r = rtlsdr_read_async(dev, data_read_callback, (void*)&callback_args, 0, IQ_BUF_LEN);
-    if (r < 0) {
+    if(r < 0) {
         fprintf(stderr, "Async data read failed.\n");
         do_exit = true;
     }

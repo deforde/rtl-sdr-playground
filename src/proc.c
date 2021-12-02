@@ -1,4 +1,3 @@
-#include "plot.h"
 #include "proc.h"
 
 #include <errno.h>
@@ -8,6 +7,8 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <time.h>
+
+#include "plot.h"
 
 void* plot_ampl_spectrum(void* args)
 {
@@ -23,7 +24,7 @@ void* plot_ampl_spectrum(void* args)
     while(!(*do_exit)) {
         int n_read = 0;
         int r = rtlsdr_read_sync(dev, buffer, buf_len, &n_read);
-        if (r < 0) {
+        if(r < 0) {
             fprintf(stderr, "Sync read failed.\n");
             break;
         }
@@ -62,7 +63,7 @@ void* send_iq_data(void* args)
     while(!(*do_exit)) {
         int n_read = 0;
         int r = rtlsdr_read_sync(dev, buffer, buf_len, &n_read);
-        if (r < 0) {
+        if(r < 0) {
             fprintf(stderr, "Sync read failed.\n");
             break;
         }
